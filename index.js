@@ -9,12 +9,30 @@ const db = require('./db.connection');
 //
 
 //view all roles - READ - "SELECT" * FROM
+
 //view all employees READ - "SELECT * FROM
 async function viewAllEmployees()
 
 async function createRole() 
 
-//SELECT the existing department out for th
+//SELECT the existing department out for the 'department' table
+    const departments = [
+        {
+            id: 1,
+            name: "Sales"
+        },
+        {
+            id: 2,
+            name: "Accounting"
+        }
+    ];
+    //.map() the results from 'department to question data for inquirer
+    const choices = departments.map(department => {
+        return {
+            name: department.name,
+            value: department.id
+        }
+    });
 
 //add an employee
 
