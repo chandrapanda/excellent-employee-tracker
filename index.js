@@ -2,20 +2,29 @@ const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const db = require('./db.connection');
 
-//Present user with options
-//View all departments - READ -SELECT * FROM
-//Add a Department
+//TODO: Present user with options
+
+
+//TODO: View all departments - READ - "SELECT * FROM [table_name]"
+async function viewAllDepartments() {
+
+
+}
+
+//TODO: Add a Department
 
 //
 
-//view all roles - READ - "SELECT" * FROM
+//TODO: view all roles - READ - "SELECT" * FROM
 
-//view all employees READ - "SELECT * FROM
-async function viewAllEmployees()
+//TODO: view all employees READ - "SELECT * FROM
+async function viewAllEmployees() {
+    const employees = await db.query('SELECT * FROM employee');
+    console.table(employees);
+}
 
-async function createRole() 
-
-//SELECT the existing department out for the 'department' table
+async function createRole() {
+    //TODO: SELECT the existing department out for the 'department' table
     const departments = [
         {
             id: 1,
@@ -26,14 +35,16 @@ async function createRole()
             name: "Accounting"
         }
     ];
-    //.map() the results from 'department to question data for inquirer
+    //TODO: .map() the results from 'department to question data for inquirer
     const choices = departments.map(department => {
         return {
             name: department.name,
             value: department.id
         }
     });
+}
 
-//add an employee
 
-//update employee -SELECT
+//TODO: add an employee
+
+//TODO: update employee -SELECT
