@@ -1,7 +1,6 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
-const db = require('./db.connection');
-const { repeat } = require('lodash');
+const db = require('./db.json');
 
 //Questions for input
 const firstQuestion = [
@@ -27,18 +26,25 @@ function initialQuestion() {
     .then((response) => {
         console.log(response);
         if (response == 'View all departments') {
+            viewAllDepartments();
             console.log('View all departments initiated');
         } else if (response == 'View all roles') {
+            viewAllRoles();
             console.log('View all roles initiated');
         } else if (response == 'View all employees') {
+            viewAllEmployees();
             console.log('View all employees initiated');
         } else if (response == 'Add a department') {
+            addDepartment();
             console.log('Add a department initiated');
         } else if (response == 'Add a role') {
+            addRole();
             console.log('Add a role initiated');
         } else if (response == 'Add an employee') {
+            addEmployee();
             console.log('Add an employee initiated');
         } else if (response == 'Update an employee role') {
+            updateEmployee();
             console.log('Update an employee initiated');
         };
     });
@@ -55,8 +61,6 @@ async function addDepartment() {
     console.log('add a department');
 }
 
-//
-
 //TODO: view all roles - READ - "SELECT" * FROM
 async function viewAllRoles() {
     console.log('view all roles');
@@ -68,7 +72,7 @@ async function viewAllEmployees() {
     console.table(employees);
 }
 
-async function createRole() {
+async function addRole() {
     //TODO: SELECT the existing department out for the 'department' table
     const departments = [
         {
@@ -87,8 +91,7 @@ async function createRole() {
             value: department.id
         }
     });
-}
-
+};
 
 //TODO: add an employee
 async function addEmployee() {
@@ -99,3 +102,6 @@ async function addEmployee() {
 async function updateEmployee() {
     console.log('update employee');
 }
+
+//Initiate application
+initialQuestion();
