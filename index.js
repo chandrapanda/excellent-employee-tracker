@@ -1,21 +1,66 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const db = require('./db.connection');
+const { repeat } = require('lodash');
+
+//Questions for input
+const firstQuestion = [
+    {
+        type: 'list',
+        message: 'What would you like to do?',
+        choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee role'],
+        name: 'first',
+        validate: function (answer) {
+            if (answer.length < 1) {
+                return console.log("Please select an option and hit ENTER");
+            }
+            return true;
+        }
+    }
+];
 
 //TODO: Present user with options
+
+function initialQuestion() {
+    inquirer
+    .prompt (firstQuestion)
+    .then((response) => {
+        console.log(response);
+        if (response == 'View all departments') {
+            console.log('View all departments initiated');
+        } else if (response == 'View all roles') {
+            console.log('View all roles initiated');
+        } else if (response == 'View all employees') {
+            console.log('View all employees initiated');
+        } else if (response == 'Add a department') {
+            console.log('Add a department initiated');
+        } else if (response == 'Add a role') {
+            console.log('Add a role initiated');
+        } else if (response == 'Add an employee') {
+            console.log('Add an employee initiated');
+        } else if (response == 'Update an employee role') {
+            console.log('Update an employee initiated');
+        };
+    });
+};
 
 
 //TODO: View all departments - READ - "SELECT * FROM [table_name]"
 async function viewAllDepartments() {
-
-
+    console.log('view all departments');
 }
 
 //TODO: Add a Department
+async function addDepartment() {
+    console.log('add a department');
+}
 
 //
 
 //TODO: view all roles - READ - "SELECT" * FROM
+async function viewAllRoles() {
+    console.log('view all roles');
+}
 
 //TODO: view all employees READ - "SELECT * FROM
 async function viewAllEmployees() {
@@ -46,5 +91,11 @@ async function createRole() {
 
 
 //TODO: add an employee
+async function addEmployee() {
+    console.log('add employee');
+}
 
 //TODO: update employee -SELECT
+async function updateEmployee() {
+    console.log('update employee');
+}
