@@ -1,6 +1,29 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
-const db = require('./db.json');
+const db = require('./db/db.json');
+const PORT = process.env.PORT || 3001;
+
+// Connect to database
+const db = mysql.createConnection(
+    {
+      host: 'localhost',
+      // MySQL username,
+      user: 'root',
+      // MySQL password
+      password: '',
+      database: 'company_db'
+    },
+    console.log(`Connected to the company_db database.`)
+  );
+
+  // Default response for any other request (Not Found)
+app.use((req, res) => {
+    res.status(404).end();
+  });
+  
+app.listen(PORT, () => {
+console.log(`Server running on port ${PORT}`);
+});
 
 //Questions for input
 const firstQuestion = [
@@ -54,6 +77,12 @@ function initialQuestion() {
 //TODO: View all departments - READ - "SELECT * FROM [table_name]"
 async function viewAllDepartments() {
     console.log('view all departments');
+
+    // Query database
+    db.query('SELECT * FROM departments', function (err, results) {
+        console.log(err);
+        console.log(results);
+    });
 }
 
 //TODO: Add a Department

@@ -1,54 +1,33 @@
-DROP DATABASE IF EXISTS departments_db;
--- Creates the "departments" database --
-CREATE DATABASE departments_db;
+DROP DATABASE IF EXISTS company_db;
+-- Creates the "company_db" database --
+CREATE DATABASE company_db;
 
--- Makes it so all of the following code will affect departments_db --
-USE departments_db;
+-- Selects the "company_db database" --
+USE company_db;
 
--- Creates the table "departments" within ?_db --
-
+-- Creates the table "departments" within company_db --
 CREATE TABLE departments (
-      -- Creates a numeric column called "id" which will automatically increment its default value as we create new rows --
-    id INT PRIMARY KEY,
-    department_name VARCHAR(30) NOT NULL,
+      -- Creates a numeric column called "id" which will automatically increment its default value  --
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    department_name VARCHAR(30)
 );
 
-DROP DATABASE IF EXISTS roles_db;
--- Creates the "employees" database --
-CREATE DATABASE roles_db;
-
--- Makes it so all of the following code will affect inventory_db --
-USE roles_db;
-
--- Creates the table "roles" within ?_db --
+-- Creates the table "roles" within company_db --
 
 CREATE TABLE roles (
-      -- Creates a numeric column called "id" which will automatically increment its default value as we create new rows --
-    id INT PRIMARY KEY,
-    job_title VARCHAR(30) NOT NULL,
-    department VARCHAR(30) NOT NULL,
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    job_title VARCHAR(30),
+    department_id INT,
     salary INT,
-    manager_id INT,
-    manager_name VARCHAR(30) NOT NULL,
     FOREIGN KEY (department_id)
-    REFERENCES department(id)
+    REFERENCES departments(id)
     ON DELETE SET NULL
-    FOREIGN KEY (department_id)
-    REFERENCES department(id)
 );
 
-DROP DATABASE IF EXISTS employees_db;
--- Creates the "employees" database --
-CREATE DATABASE employees_db;
-
--- Makes it so all of the following code will affect employees_db --
-USE employees_db;
-
--- Creates the table "employees" within ?_db --
+-- Creates the table "employees" within company_db --
 
 CREATE TABLE employees (
-      -- Creates a numeric column called "id" which will automatically increment its default value as we create new rows --
-    id INT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(30) NOT NULL,
     last_name VARCHAR(30) NOT NULL,
     role_id INT,
@@ -56,7 +35,8 @@ CREATE TABLE employees (
     manager_name VARCHAR(30) NOT NULL,
     FOREIGN KEY (role_id)
     REFERENCES roles(id)
-    ON DELETE SET NULL
+    ON DELETE SET NULL,
     FOREIGN KEY (manager_id)
     REFERENCES employees(id)
+    ON DELETE SET NULL
 );
