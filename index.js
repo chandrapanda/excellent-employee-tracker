@@ -69,8 +69,6 @@ async function viewAllDepartments() {
 
 //TODO: view all roles - READ - "SELECT" * FROM
 async function viewAllRoles() {
-    console.log('view all roles');
-
     try {
         // Runs Query database
         var results = await db.query('SELECT * FROM roles;')
@@ -83,8 +81,14 @@ async function viewAllRoles() {
 
 //TODO: view all employees READ - "SELECT * FROM
 async function viewAllEmployees() {
-    const employees = await db.query('SELECT * FROM employee');
-    console.table(employees);
+    try {
+        // Runs Query database
+        var results = await db.query('SELECT * FROM employees;')
+        console.table(results);
+    } catch (err) {
+        console.error(err);
+    }
+    initialQuestion();
 }
 
 //TODO: Add a Department

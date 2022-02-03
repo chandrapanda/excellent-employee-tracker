@@ -10,11 +10,11 @@ VALUES ("Head of marketing", 4, 120000, "Leah Rodriguez"),
        ("Software Engineer", 1, 90000, "Kunal Singh"),
        ("Lawyer", 3, 110000, "Tori Bakersfield");
 
--- INSERT INTO employees (first_name, last_name, role_id, manager_id, manager_name)
--- VALUES ("Jose", "Mañuel", 001, 3, "Leah Rodriguez"),
---        ("Cleo", "Shmidt", 002, 2, "Matthew Smith"),
---        ("Hong", "Mai", 003, 1, "Kunal Singh"),
---        ("Gary", "Zhang", 004, 4, "Tori Bakersfield");
+INSERT INTO employees (first_name, last_name, role_id, salary, manager_id, manager_name)
+VALUES ("Jose", "Mañuel", 1, 67000, 3, "Leah Rodriguez"),
+       ("Cleo", "Shmidt", 2, 75000, 2, "Matthew Smith"),
+       ("Hong", "Mai", 3, 88000, 1, "Kunal Singh"),
+       ("Gary", "Zhang", 4, 93000, 4, "Tori Bakersfield");
        
 
        
