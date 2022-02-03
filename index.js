@@ -2,7 +2,6 @@ const inquirer = require('inquirer');
 const util = require('util');
 const table = require('console.table');
 const db = require('./db/connection');
-const { initial } = require('lodash');
 
 //Allows query to be run asynchronously
 db.query = util.promisify(db.query);
@@ -23,8 +22,7 @@ const firstQuestion = [
     }
 ];
 
-//User is presented with options
-
+//User is presented with options from which to select
 function initialQuestion() {
     inquirer
     .prompt (firstQuestion)
@@ -55,7 +53,7 @@ function initialQuestion() {
 };
 
 
-//TODO: View all departments - READ - "SELECT * FROM [table_name]"
+//View all departments
 async function viewAllDepartments() {
     try {
         // Runs Query database
@@ -67,7 +65,7 @@ async function viewAllDepartments() {
     initialQuestion();
 };
 
-//TODO: view all roles - READ - "SELECT" * FROM
+//View all roles
 async function viewAllRoles() {
     try {
         // Runs Query database
@@ -79,7 +77,7 @@ async function viewAllRoles() {
     initialQuestion();
 }
 
-//TODO: view all employees READ - "SELECT * FROM
+//View all employees
 async function viewAllEmployees() {
     try {
         // Runs Query database
@@ -93,21 +91,36 @@ async function viewAllEmployees() {
 
 //TODO: Add a Department
 async function addDepartment() {
-    console.log('add a department');
+    const {department} = await inquirer.prompt(
+        [
+            {
+            type: "input",
+            message: "Enter department name you wish to add.",
+            name: "department",
+                validate: function (answer) {
+                    if (answer.length < 3) {
+                        return console.log("Please enter a department name you'd like to add.");
+                    }
+                    return true;
+                }
+            }
+        ]
+    );
+    try {
+        db.query("INSERT INTO departments (department_name) VALUES (?)", department);
+        console.log(`${department} added to Departments.`)
+    } catch (err) {
+        console.error(err);
+    }
+    initialQuestion();
 }
 
 async function addRole() {
     //TODO: SELECT the existing department out for the 'department' table
-    const departments = [
-        {
-            id: 1,
-            name: "Sales"
-        },
-        {
-            id: 2,
-            name: "Accounting"
-        }
-    ];
+    // try {
+    //     let departments = await db.query('SELECT * FROM departments;')
+    // }
+
     //TODO: .map() the results from 'department to question data for inquirer
     const choices = departments.map(department => {
         return {
