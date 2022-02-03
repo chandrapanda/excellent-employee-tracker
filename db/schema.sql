@@ -19,6 +19,7 @@ CREATE TABLE roles (
     job_title VARCHAR(30),
     department_id INT,
     salary INT,
+    manager_name VARCHAR(30),
     FOREIGN KEY (department_id)
     REFERENCES departments(id)
     ON DELETE SET NULL

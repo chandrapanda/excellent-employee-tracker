@@ -2,6 +2,7 @@ const inquirer = require('inquirer');
 const util = require('util');
 const table = require('console.table');
 const db = require('./db/connection');
+const { initial } = require('lodash');
 
 //Allows query to be run asynchronously
 db.query = util.promisify(db.query);
@@ -28,7 +29,6 @@ function initialQuestion() {
     inquirer
     .prompt (firstQuestion)
     .then(({response}) => {
-        console.log(response);
         if (response == firstQuestion[0].choices[0]) {
             viewAllDepartments();
             console.log('View all departments initiated');
@@ -57,7 +57,6 @@ function initialQuestion() {
 
 //TODO: View all departments - READ - "SELECT * FROM [table_name]"
 async function viewAllDepartments() {
-    console.log('view all departments');
     try {
         // Runs Query database
         var results = await db.query('SELECT * FROM departments;')
@@ -65,26 +64,32 @@ async function viewAllDepartments() {
     } catch (err) {
         console.error(err);
     }
+    initialQuestion();
 };
-
-//TODO: Add a Department
-async function addDepartment() {
-    console.log('add a department');
-}
 
 //TODO: view all roles - READ - "SELECT" * FROM
 async function viewAllRoles() {
     console.log('view all roles');
-    db.query('SELECT roles.id, roles.title, departments.department_name as department, roles.salary FROM role LEFT JOIN department ON department.id = roles.department_id;', function(err, results) {
-        console.log(err);
+
+    try {
+        // Runs Query database
+        var results = await db.query('SELECT * FROM roles;')
         console.table(results);
-    });
+    } catch (err) {
+        console.error(err);
+    }
+    initialQuestion();
 }
 
 //TODO: view all employees READ - "SELECT * FROM
 async function viewAllEmployees() {
     const employees = await db.query('SELECT * FROM employee');
     console.table(employees);
+}
+
+//TODO: Add a Department
+async function addDepartment() {
+    console.log('add a department');
 }
 
 async function addRole() {
