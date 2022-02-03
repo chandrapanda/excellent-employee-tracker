@@ -1,29 +1,10 @@
-const mysql = require('mysql2');
 const inquirer = require('inquirer');
-const db = require('./db/db.json');
-const PORT = process.env.PORT || 3001;
+const util = require('util');
+const table = require('console.table');
+const db = require('./db/connection');
 
-// Connect to database
-const db = mysql.createConnection(
-    {
-      host: 'localhost',
-      // MySQL username,
-      user: 'root',
-      // MySQL password
-      password: '',
-      database: 'company_db'
-    },
-    console.log(`Connected to the company_db database.`)
-  );
-
-  // Default response for any other request (Not Found)
-app.use((req, res) => {
-    res.status(404).end();
-  });
-  
-app.listen(PORT, () => {
-console.log(`Server running on port ${PORT}`);
-});
+//Allows query to be run asynchronously
+db.query = util.promisify(db.query);
 
 //Questions for input
 const firstQuestion = [
@@ -31,7 +12,7 @@ const firstQuestion = [
         type: 'list',
         message: 'What would you like to do?',
         choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee role'],
-        name: 'first',
+        name: 'response',
         validate: function (answer) {
             if (answer.length < 1) {
                 return console.log("Please select an option and hit ENTER");
@@ -41,14 +22,14 @@ const firstQuestion = [
     }
 ];
 
-//TODO: Present user with options
+//User is presented with options
 
 function initialQuestion() {
     inquirer
     .prompt (firstQuestion)
-    .then((response) => {
+    .then(({response}) => {
         console.log(response);
-        if (response == 'View all departments') {
+        if (response == firstQuestion[0].choices[0]) {
             viewAllDepartments();
             console.log('View all departments initiated');
         } else if (response == 'View all roles') {
@@ -77,13 +58,14 @@ function initialQuestion() {
 //TODO: View all departments - READ - "SELECT * FROM [table_name]"
 async function viewAllDepartments() {
     console.log('view all departments');
-
-    // Query database
-    db.query('SELECT * FROM departments', function (err, results) {
-        console.log(err);
-        console.log(results);
-    });
-}
+    try {
+        // Runs Query database
+        var results = await db.query('SELECT * FROM departments;')
+        console.table(results);
+    } catch (err) {
+        console.error(err);
+    }
+};
 
 //TODO: Add a Department
 async function addDepartment() {
@@ -93,6 +75,10 @@ async function addDepartment() {
 //TODO: view all roles - READ - "SELECT" * FROM
 async function viewAllRoles() {
     console.log('view all roles');
+    db.query('SELECT roles.id, roles.title, departments.department_name as department, roles.salary FROM role LEFT JOIN department ON department.id = roles.department_id;', function(err, results) {
+        console.log(err);
+        console.table(results);
+    });
 }
 
 //TODO: view all employees READ - "SELECT * FROM
