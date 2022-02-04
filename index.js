@@ -89,7 +89,7 @@ async function viewAllEmployees() {
     initialQuestion();
 }
 
-//TODO: Add a Department
+//Add a Department
 async function addDepartment() {
     const {department} = await inquirer.prompt(
         [
@@ -113,21 +113,71 @@ async function addDepartment() {
         console.error(err);
     }
     initialQuestion();
-}
+};
 
+//Add a role
 async function addRole() {
-    //TODO: SELECT the existing department out for the 'department' table
-    // try {
-    //     let departments = await db.query('SELECT * FROM departments;')
-    // }
+    //Selects all current departments
+    let departments = await db.query('SELECT * FROM departments;');
 
-    //TODO: .map() the results from 'department to question data for inquirer
-    const choices = departments.map(department => {
-        return {
-            name: department.name,
-            value: department.id
-        }
+    let departmentNameIDMap = {};
+   
+    //Creates array of departments to select from
+    departments.forEach(department => {
+            departmentNameIDMap[department.department_name] = department.id; 
     });
+
+    let departmentList = departments.map(department => {
+        return department.department_name;
+    });
+
+    const { job_title, salary, department_name } = await inquirer.prompt(
+        [
+            {
+                type: "input",
+                message: "Enter the job title of the new role.",
+                name: "job_title",
+                    validate: function (answer) {
+                        if (answer.length < 3) {
+                            return console.log("Please enter a role you'd like to add.");
+                        }
+                        return true;
+                    }
+            },
+            {
+                type: "input",
+                message: "Enter the salary of the new role.",
+                name: "salary",
+                    validate: function (answer) {
+                        if (answer.length < 3) {
+                            return console.log("Please enter a role's salary you'd like to add.");
+                        }
+                        return true;
+                    }
+            },
+            {
+                type: "list",
+                message: "Select a department for this role.",
+                choices: departmentList,
+                name: "department_name",
+                    validate: function (answer) {
+                        if (answer.length < 3) {
+                            return console.log("Please select the role's department.");
+                        }
+                        return true;
+                    }
+            }
+        ]
+    );
+    //Adds information to Roles table
+    try {
+        await db.query("INSERT INTO roles (job_title, salary, department_id) VALUES (?, ?, ?)", [job_title, salary, departmentNameIDMap[department_name]]);
+        console.log(`${job_title} added to Roles.`);
+       
+    } catch(err) {
+        console.error(err);
+    };
+    initialQuestion();
 };
 
 //TODO: add an employee
