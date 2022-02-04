@@ -2,6 +2,8 @@ const inquirer = require('inquirer');
 const util = require('util');
 const table = require('console.table');
 const db = require('./db/connection');
+const _ = require('lodash');
+const { last } = require('lodash');
 
 //Allows query to be run asynchronously
 db.query = util.promisify(db.query);
@@ -139,7 +141,7 @@ async function addRole() {
                 name: "job_title",
                     validate: function (answer) {
                         if (answer.length < 3) {
-                            return console.log("Please enter a role you'd like to add.");
+                            return console.log("Please enter a role name.");
                         }
                         return true;
                     }
@@ -150,7 +152,7 @@ async function addRole() {
                 name: "salary",
                     validate: function (answer) {
                         if (answer.length < 3) {
-                            return console.log("Please enter a role's salary you'd like to add.");
+                            return console.log("Please enter this role's salary.");
                         }
                         return true;
                     }
@@ -161,7 +163,7 @@ async function addRole() {
                 choices: departmentList,
                 name: "department_name",
                     validate: function (answer) {
-                        if (answer.length < 3) {
+                        if (!answer) {
                             return console.log("Please select the role's department.");
                         }
                         return true;
@@ -180,14 +182,133 @@ async function addRole() {
     initialQuestion();
 };
 
-//TODO: add an employee
+//Add an employee
 async function addEmployee() {
-    console.log('add employee');
+        //Selects all current roles
+        let roles = await db.query('SELECT id, job_title FROM roles;');
+        console.log(roles);
+        let roleIDMap = {};
+        console.log(roleIDMap);
+        //Creates array of roles to select from
+        roles.forEach(role => {
+                roleIDMap[role.job_title] = role.id; 
+        });
+    
+        let roleList = roles.map(role => {
+            return role.job_title;
+        });
+    console.log(roleIDMap)
+        const { first_name, last_name, job_title, manager_name } = await inquirer.prompt(
+            [
+                {
+                    type: "input",
+                    message: "Enter the employee's first name.",
+                    name: "first_name",
+                        validate: function (answer) {
+                            if (answer.length < 2) {
+                                return console.log("Please enter a first name.");
+                            }
+                            return true;
+                        }
+                },
+                {
+                    type: "input",
+                    message: "Enter the employee's last name.",
+                    name: "last_name",
+                        validate: function (answer) {
+                            if (answer.length < 2) {
+                                return console.log("Please enter a last name.");
+                            }
+                            return true;
+                        }
+                },
+                {
+                    type: "list",
+                    message: "Select a role for this employee.",
+                    choices: roleList,
+                    name: "job_title",
+                        validate: function (answer) {
+                            if (!answer) {
+                                return console.log("Please select the employee's role.");
+                            }
+                            return true;
+                        }
+                },
+                {
+                    type: "list",
+                    message: "Select the employee's manager.",
+                    choices: ["Leah Rodriguez", "Matthew Smith", "Kunal Singh", "Tori Bakersfield"],
+                    name: "manager_name",
+                        validate: function (answer) {
+                            if (!answer) {
+                                return console.log("Please select a manager's name.");
+                            }
+                            return true;
+                        }
+                },
+            ]
+        );
+        //Adds information to Employees table
+        try {
+            await db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_name) VALUES ("${first_name}", "${last_name}", "${roleIDMap[job_title]}", "${manager_name}")`);
+            console.log(`${first_name} ${last_name} added to Employees.`);
+           
+        } catch(err) {
+            console.error(err);
+        };
+        initialQuestion();
 }
 
 //TODO: update employee -SELECT
 async function updateEmployee() {
-    console.log('update employee');
+    let employees = await db.query('SELECT first_name FROM employees;');
+ 
+    let employeesList = employees.map(employee => {
+        return employee.first_name;
+    });
+    let roles = await db.query('SELECT job_title FROM roles;');
+    console.log(roles);
+
+    let rolesList = roles.map(role => {
+        return role.job_title;
+    });
+
+    const {newEmployeeRole} = await inquirer.prompt(
+        [
+            {
+                type: "list",
+                message: "Choose the employee you'd like to update.",
+                choices: employeesList,
+                name: "employee",
+                    validate: function (answer) {
+                        if (answer.length < 3) {
+                            return console.log("Please choose the employee you'd like to update.");
+                        }
+                        return true;
+                    }
+                },
+            {
+            type: "list",
+            message: "Please choose the employee's new role.",
+            choices: rolesList,
+            name: "newRole",
+                validate: function (answer) {
+                    if (answer.length < 3) {
+                        return console.log("Please choose the employee's new role.");
+                    }
+                    return true;
+                }
+            }
+        ]
+    );
+    try {
+        //TODO: finish query for update
+        db.query("UPDATE employees SET role_id VALUES (?)", newEmployeeRole);
+        console.log(`${employee} updated.`)
+    } catch (err) {
+        console.error(err);
+    }
+    initialQuestion();
 }
 
 //Initiate application
