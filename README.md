@@ -61,5 +61,8 @@ THEN I am prompted to select an employee to update and their new role and this i
 ```
 
 ## Video-Link
+[Video](https://watch.screencastify.com/v/U2YsqyBEkzl6lnIuePtg)
 
 ## Screenshots
+![Screenshot1](./assets/images/screenshot1.png)
+![Screenshot2](./assets/images/screenshot2.png)
