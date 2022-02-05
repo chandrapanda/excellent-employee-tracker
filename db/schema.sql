@@ -30,7 +30,6 @@ CREATE TABLE employees (
     last_name VARCHAR(30) NOT NULL,
     role_id INT,
     department_id INT,
-    salary INT,
     manager_name VARCHAR(30) NOT NULL,
     FOREIGN KEY (role_id)
     REFERENCES roles(id)

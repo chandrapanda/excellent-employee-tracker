@@ -16,8 +16,6 @@ connection.query = util.promisify( connection.query );
 connection.connect(function (err) {
   if (err) {
     throw err;
-  } else {
-    console.log('Succesfully connected to mysql')
   }
 });
 
