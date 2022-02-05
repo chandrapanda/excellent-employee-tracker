@@ -1,3 +1,4 @@
+--Drops database in case of TEST --
 DROP DATABASE IF EXISTS company_db;
 -- Creates the "company_db" database --
 CREATE DATABASE company_db;

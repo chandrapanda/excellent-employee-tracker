@@ -2,7 +2,6 @@ const inquirer = require('inquirer');
 const util = require('util');
 const table = require('console.table');
 const db = require('./db/connection');
-const { first } = require('lodash');
 
 //Allows query to be run asynchronously
 db.query = util.promisify(db.query);
@@ -28,7 +27,7 @@ function askFirstQuestion() {
     inquirer
     .prompt (firstQuestion)
     .then(({response}) => {
-        if (response == firstQuestion[0].choices[0]) {
+        if (response == 'View all departments') {
             viewAllDepartments();
         } else if (response == 'View all roles') {
             viewAllRoles();
@@ -69,7 +68,7 @@ async function viewAllRoles() {
         console.error(err);
     }
     askFirstQuestion();
-}
+};
 
 //View all employees
 async function viewAllEmployees() {
@@ -81,7 +80,7 @@ async function viewAllEmployees() {
         console.error(err);
     }
     askFirstQuestion();
-}
+};
 
 //Add a Department
 async function addDepartment() {
@@ -176,113 +175,115 @@ async function addRole() {
 
 //Add an employee
 async function addEmployee() {
-        //Selects all current roles
-        let roles = await db.query('SELECT id, job_title FROM roles;');
-        let roleIDMap = {};
 
-        //Creates array of roles to select from
-        roles.forEach(role => {
-                roleIDMap[role.job_title] = role.id; 
-        });
-    
-        let roleList = roles.map(role => {
-            return role.job_title;
-        });
+    //Selects all current roles
+    let roles = await db.query('SELECT id, job_title FROM roles;');
+    let roleIDMap = {};
 
-        //Selects all current departments
-        let departments = await db.query('SELECT * FROM departments;');
+    //Creates array of roles to select from
+    roles.forEach(role => {
+            roleIDMap[role.job_title] = role.id; 
+    });
 
-        let departmentNameIDMap = {};
-    
-        //Creates array of departments to select from
-        departments.forEach(department => {
-                departmentNameIDMap[department.department_name] = department.id; 
-        });
+    let roleList = roles.map(role => {
+        return role.job_title;
+    });
 
-        let departmentList = departments.map(department => {
-            return department.department_name;
-        });
+    //Selects all current departments
+    let departments = await db.query('SELECT * FROM departments;');
 
-        const { first_name, last_name, job_title, department_name, manager_name } = await inquirer.prompt(
-            [
-                {
-                    type: "input",
-                    message: "Enter the employee's first name.",
-                    name: "first_name",
-                        validate: function (answer) {
-                            if (answer.length < 2) {
-                                return console.log("Please enter a first name.");
-                            }
-                            return true;
+    let departmentNameIDMap = {};
+
+    //Creates array of departments to select from
+    departments.forEach(department => {
+        departmentNameIDMap[department.department_name] = department.id; 
+    });
+
+    let departmentList = departments.map(department => {
+        return department.department_name;
+    });
+
+    const { first_name, last_name, job_title, department_name, manager_name } = await inquirer.prompt(
+        [
+            {
+                type: "input",
+                message: "Enter the employee's first name.",
+                name: "first_name",
+                    validate: function (answer) {
+                        if (answer.length < 2) {
+                            return console.log("Please enter a first name.");
                         }
-                },
-                {
-                    type: "input",
-                    message: "Enter the employee's last name.",
-                    name: "last_name",
-                        validate: function (answer) {
-                            if (answer.length < 2) {
-                                return console.log("Please enter a last name.");
-                            }
-                            return true;
+                        return true;
+                    }
+            },
+            {
+                type: "input",
+                message: "Enter the employee's last name.",
+                name: "last_name",
+                    validate: function (answer) {
+                        if (answer.length < 2) {
+                            return console.log("Please enter a last name.");
                         }
-                },
-                {
-                    type: "list",
-                    message: "Select a role for this employee.",
-                    choices: roleList,
-                    name: "job_title",
-                        validate: function (answer) {
-                            if (!answer) {
-                                return console.log("Please select the employee's role.");
-                            }
-                            return true;
+                        return true;
+                    }
+            },
+            {
+                type: "list",
+                message: "Select a role for this employee.",
+                choices: roleList,
+                name: "job_title",
+                    validate: function (answer) {
+                        if (!answer) {
+                            return console.log("Please select the employee's role.");
                         }
-                },
-                {
-                    type: "list",
-                    message: "Select a department for this employee.",
-                    choices: departmentList,
-                    name: "department_name",
-                        validate: function (answer) {
-                            if (!answer) {
-                                return console.log("Please select the employee's department.");
-                            }
-                            return true;
+                        return true;
+                    }
+            },
+            {
+                type: "list",
+                message: "Select a department for this employee.",
+                choices: departmentList,
+                name: "department_name",
+                    validate: function (answer) {
+                        if (!answer) {
+                            return console.log("Please select the employee's department.");
                         }
-                },
-                {
-                    type: "list",
-                    message: "Select the employee's manager.",
-                    choices: ["Leah Rodriguez", "Matthew Smith", "Kunal Singh", "Tori Bakersfield"],
-                    name: "manager_name",
-                        validate: function (answer) {
-                            if (!answer) {
-                                return console.log("Please select a manager's name.");
-                            }
-                            return true;
+                        return true;
+                    }
+            },
+            {
+                type: "list",
+                message: "Select the employee's manager.",
+                choices: ["Leah Rodriguez", "Matthew Smith", "Kunal Singh", "Tori Bakersfield"],
+                name: "manager_name",
+                    validate: function (answer) {
+                        if (!answer) {
+                            return console.log("Please select a manager's name.");
                         }
-                },
-            ]
-        );
+                        return true;
+                    }
+            },
+        ]
+    );
 
-        //Adds information to Employees table
-        try {
-            await db.query(`INSERT INTO employees (first_name, last_name, role_id, department_id, manager_name) VALUES ("${first_name}", "${last_name}", "${roleIDMap[job_title]}", "${departmentNameIDMap[department_name]}", "${manager_name}");`);
-            console.log(`${first_name} ${last_name} added to Employees.`);
-           
-        } catch(err) {
-            console.error(err);
-        };
-        askFirstQuestion();
+    //Adds information to Employees table
+    try {
+        await db.query(`INSERT INTO employees (first_name, last_name, role_id, department_id, manager_name) VALUES ("${first_name}", "${last_name}", "${roleIDMap[job_title]}", "${departmentNameIDMap[department_name]}", "${manager_name}");`);
+        console.log(`${first_name} ${last_name} added to Employees.`);
+        
+    } catch(err) {
+        console.error(err);
+    };
+    askFirstQuestion();
 }
 
 //Update employee role
 async function updateEmployee() {
-    // let employees = await db.query('SELECT id AS value, CONCAT (first_name, " ", last_name) AS name FROM employees;');
     
+    //Selects employees
     let employees = await db.query("SELECT first_name, last_name FROM employees");
 
+    //Creates variable for employees displayed with FIRST and LAST name
     let employeesList = employees.map(employee => {
         return employee.first_name + " " + employee.last_name;
     });
@@ -328,8 +329,10 @@ async function updateEmployee() {
             }
         ]
     );
+
+    //Splits name so it's easily accessed in MYSQL table
     var firstName = employee.split([1]);
-    console.log(firstName);
+
     try {
         await db.query(`UPDATE employees SET role_id = ("${roleIDMap[job_title]}") WHERE first_name = "${firstName}";`);
         console.log(`${employee} updated.`)
