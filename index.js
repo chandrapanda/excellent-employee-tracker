@@ -74,7 +74,12 @@ async function viewAllRoles() {
 async function viewAllEmployees() {
     try {
         // Runs Query database
-        var results = await db.query('SELECT employees.*, roles.salary FROM employees LEFT JOIN roles ON employees.role_id = roles.id;')
+        var results = await db.query(`
+        SELECT employees.id, employees.first_name, employees.last_name, roles.salary, roles.job_title, departments.department_name, managers.first_name AS manager_first_name, managers.last_name AS manager_last_name 
+        FROM employees 
+        LEFT JOIN roles ON employees.role_id = roles.id 
+        LEFT JOIN departments ON employees.department_id = departments.id 
+        LEFT JOIN employees managers ON employees.manager_id = managers.id;`);
         console.table(results);
     } catch (err) {
         console.error(err);
@@ -113,18 +118,12 @@ async function addRole() {
     //Selects all current departments
     let departments = await db.query('SELECT * FROM departments;');
 
-    let departmentNameIDMap = {};
-   
-    //Creates array of departments to select from
-    departments.forEach(department => {
-            departmentNameIDMap[department.department_name] = department.id; 
-    });
-
+    //Maps out departments with ID as identifier in backend
     let departmentList = departments.map(department => {
-        return department.department_name;
+        return { name: department.department_name, value: department.id } ;
     });
 
-    const { job_title, salary, department_name } = await inquirer.prompt(
+    const { job_title, salary, department_id } = await inquirer.prompt(
         [
             {
                 type: "input",
@@ -152,7 +151,7 @@ async function addRole() {
                 type: "list",
                 message: "Select a department for this role.",
                 choices: departmentList,
-                name: "department_name",
+                name: "department_id",
                     validate: function (answer) {
                         if (!answer) {
                             return console.log("Please select the role's department.");
@@ -164,7 +163,7 @@ async function addRole() {
     );
     //Adds information to Roles table
     try {
-        await db.query(`INSERT INTO roles (job_title, salary, department_id) VALUES ("${job_title}", "${salary}", "${departmentNameIDMap[department_name]}")`);
+        await db.query(`INSERT INTO roles (job_title, salary, department_id) VALUES ("${job_title}", "${salary}", "${department_id}")`);
         console.log(`${job_title} added to Roles.`);
        
     } catch(err) {
@@ -178,46 +177,28 @@ async function addEmployee() {
 
     //Selects all current roles
     let roles = await db.query('SELECT id, job_title FROM roles;');
-    let roleIDMap = {};
 
-    //Creates array of roles to select from
-    roles.forEach(role => {
-            roleIDMap[role.job_title] = role.id; 
-    });
-
+    //Maps out list of roles and adds value of ID in backend
     let roleList = roles.map(role => {
-        return role.job_title;
+        return { name: role.job_title, value: role.id };
     });
 
     //Selects all current departments
     let departments = await db.query('SELECT * FROM departments;');
 
-    let departmentNameIDMap = {};
-
-    //Creates array of departments to select from
-    departments.forEach(department => {
-        departmentNameIDMap[department.department_name] = department.id; 
-    });
-
     let departmentList = departments.map(department => {
-        return department.department_name;
+        return { name: department.department_name, value: department.id };
     });
 
     //Creates array of managers to select from
     let managers = await db.query('SELECT id, first_name, last_name FROM employees;');
 
-    let managerNameIDMap = {};
-
-    //ID number added for edge case of two persons having the same name
-    managers.forEach(manager => {
-        managerNameIDMap[manager.first_name + ' ' + manager.last_name + ' ' + manager.id] = manager.id;
-    });
-
+    //Maps out managers according to ID 
     let managerList = managers.map(manager => {
-        return manager.first_name + ' ' + manager.last_name + ' ' + manager.id;
+        return { name: manager.first_name + ' ' + manager.last_name, value: manager.id };
     });
 
-    const { first_name, last_name, job_title, department_name, manager_name } = await inquirer.prompt(
+    const { first_name, last_name, role_id, department_id, manager_id } = await inquirer.prompt(
         [
             {
                 type: "input",
@@ -245,7 +226,7 @@ async function addEmployee() {
                 type: "list",
                 message: "Select a role for this employee.",
                 choices: roleList,
-                name: "job_title",
+                name: "role_id",
                     validate: function (answer) {
                         if (!answer) {
                             return console.log("Please select the employee's role.");
@@ -257,7 +238,7 @@ async function addEmployee() {
                 type: "list",
                 message: "Select a department for this employee.",
                 choices: departmentList,
-                name: "department_name",
+                name: "department_id",
                     validate: function (answer) {
                         if (!answer) {
                             return console.log("Please select the employee's department.");
@@ -269,7 +250,7 @@ async function addEmployee() {
                 type: "list",
                 message: "Select the employee's manager.",
                 choices: managerList,
-                name: "manager_name",
+                name: "manager_id",
                     validate: function (answer) {
                         if (!answer) {
                             return console.log("Please select a manager's name.");
@@ -282,7 +263,7 @@ async function addEmployee() {
 
     //Adds information to Employees table
     try {
-        await db.query(`INSERT INTO employees (first_name, last_name, role_id, department_id, manager_id) VALUES ("${first_name}", "${last_name}", "${roleIDMap[job_title]}", "${departmentNameIDMap[department_name]}", "${managerNameIDMap[manager_name]}");`);
+        await db.query(`INSERT INTO employees (first_name, last_name, role_id, department_id, manager_id) VALUES ("${first_name}", "${last_name}", "${role_id}", "${department_id}", "${manager_id}");`);
         console.log(`${first_name} ${last_name} added to Employees.`);
         
     } catch(err) {
@@ -297,37 +278,26 @@ async function updateEmployee() {
     //Creates array of employees to select from
     let employees = await db.query('SELECT id, first_name, last_name FROM employees;');
 
-    let employeeIDMap = {};
-
-    //ID number added for edge case of two persons having the same name
-    employees.forEach(employee => {
-        employeeIDMap[employee.first_name + ' ' + employee.last_name + ' ' + employee.id] = employee.id;
-    });
-
+    //Maps employees based on name as key and ID as value
     let employeesList = employees.map(employee => {
-        return employee.first_name + ' ' + employee.last_name + ' ' + employee.id;
+        return { name: employee.first_name + ' ' + employee.last_name, value: employee.id };
     });
 
-     //Selects all current roles
-     let roles = await db.query('SELECT id, job_title FROM roles;');
-     let roleIDMap = {};
+      //Selects all current roles
+    let roles = await db.query('SELECT id, job_title FROM roles;');
 
-     //Creates array of roles to select from
-     roles.forEach(role => {
-             roleIDMap[role.job_title] = role.id; 
-     });
- 
-     let roleList = roles.map(role => {
-         return role.job_title;
-     });
+    //Maps out list of roles and adds value of ID in backend
+    let roleList = roles.map(role => {
+        return { name: role.job_title, value: role.id };
+    });
 
-    const { employee, job_title } = await inquirer.prompt(
+    const { employee_id, role_id } = await inquirer.prompt(
         [
             {
                 type: "list",
                 message: "Choose the employee you'd like to update.",
                 choices: employeesList,
-                name: "employee",
+                name: "employee_id",
                     validate: function (answer) {
                         if (answer.length < 3) {
                             return console.log("Please choose the employee you'd like to update.");
@@ -339,7 +309,7 @@ async function updateEmployee() {
             type: "list",
             message: "Please choose the employee's new role.",
             choices: roleList,
-            name: "job_title",
+            name: "role_id",
                 validate: function (answer) {
                     if (answer.length < 3) {
                         return console.log("Please choose the employee's new role.");
@@ -351,8 +321,8 @@ async function updateEmployee() {
     );
 
     try {
-        await db.query(`UPDATE employees SET role_id = ("${roleIDMap[job_title]}") WHERE id = "${employeeIDMap[employee]}";`);
-        console.log(`${employee} updated.`)
+        await db.query(`UPDATE employees SET role_id = ("${role_id}") WHERE id = "${employee_id}";`);
+        console.log(`${employee_id} updated.`)
     } catch (err) {
         console.error(err);
     }
