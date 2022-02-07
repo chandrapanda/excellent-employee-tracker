@@ -1,4 +1,4 @@
---Drops database in case of TEST --
+-- Drops database in case of TEST --
 DROP DATABASE IF EXISTS company_db;
 -- Creates the "company_db" database --
 CREATE DATABASE company_db;
@@ -31,7 +31,10 @@ CREATE TABLE employees (
     last_name VARCHAR(30) NOT NULL,
     role_id INT,
     department_id INT,
-    manager_name VARCHAR(30) NOT NULL,
+    manager_id INT,
+    FOREIGN KEY (manager_id)
+    REFERENCES employees(id)
+    ON DELETE SET NULL,
     FOREIGN KEY (role_id)
     REFERENCES roles(id)
     ON DELETE SET NULL,

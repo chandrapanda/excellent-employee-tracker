@@ -203,6 +203,20 @@ async function addEmployee() {
         return department.department_name;
     });
 
+    //Creates array of managers to select from
+    let managers = await db.query('SELECT id, first_name, last_name FROM employees;');
+
+    let managerNameIDMap = {};
+
+    //ID number added for edge case of two persons having the same name
+    managers.forEach(manager => {
+        managerNameIDMap[manager.first_name + ' ' + manager.last_name + ' ' + manager.id] = manager.id;
+    });
+
+    let managerList = managers.map(manager => {
+        return manager.first_name + ' ' + manager.last_name + ' ' + manager.id;
+    });
+
     const { first_name, last_name, job_title, department_name, manager_name } = await inquirer.prompt(
         [
             {
@@ -254,7 +268,7 @@ async function addEmployee() {
             {
                 type: "list",
                 message: "Select the employee's manager.",
-                choices: ["Leah Rodriguez", "Matthew Smith", "Kunal Singh", "Tori Bakersfield"],
+                choices: managerList,
                 name: "manager_name",
                     validate: function (answer) {
                         if (!answer) {
@@ -268,7 +282,7 @@ async function addEmployee() {
 
     //Adds information to Employees table
     try {
-        await db.query(`INSERT INTO employees (first_name, last_name, role_id, department_id, manager_name) VALUES ("${first_name}", "${last_name}", "${roleIDMap[job_title]}", "${departmentNameIDMap[department_name]}", "${manager_name}");`);
+        await db.query(`INSERT INTO employees (first_name, last_name, role_id, department_id, manager_id) VALUES ("${first_name}", "${last_name}", "${roleIDMap[job_title]}", "${departmentNameIDMap[department_name]}", "${managerNameIDMap[manager_name]}");`);
         console.log(`${first_name} ${last_name} added to Employees.`);
         
     } catch(err) {
@@ -279,13 +293,19 @@ async function addEmployee() {
 
 //Update employee role
 async function updateEmployee() {
-    
-    //Selects employees
-    let employees = await db.query("SELECT first_name, last_name FROM employees");
 
-    //Creates variable for employees displayed with FIRST and LAST name
+    //Creates array of employees to select from
+    let employees = await db.query('SELECT id, first_name, last_name FROM employees;');
+
+    let employeeIDMap = {};
+
+    //ID number added for edge case of two persons having the same name
+    employees.forEach(employee => {
+        employeeIDMap[employee.first_name + ' ' + employee.last_name + ' ' + employee.id] = employee.id;
+    });
+
     let employeesList = employees.map(employee => {
-        return employee.first_name + " " + employee.last_name;
+        return employee.first_name + ' ' + employee.last_name + ' ' + employee.id;
     });
 
      //Selects all current roles
@@ -330,11 +350,8 @@ async function updateEmployee() {
         ]
     );
 
-    //Splits name so it's easily accessed in MYSQL table
-    var firstName = employee.split([1]);
-
     try {
-        await db.query(`UPDATE employees SET role_id = ("${roleIDMap[job_title]}") WHERE first_name = "${firstName}";`);
+        await db.query(`UPDATE employees SET role_id = ("${roleIDMap[job_title]}") WHERE id = "${employeeIDMap[employee]}";`);
         console.log(`${employee} updated.`)
     } catch (err) {
         console.error(err);
